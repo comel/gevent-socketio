@@ -99,8 +99,10 @@ class SocketIOProtocol(object):
 
     def decode(self, data):
         messages = []
-        data.encode('utf-8', 'replace')
-        data = urllib.unquote_plus(data)
+        try:
+            data = urllib.unquote_plus(data).decode('utf-8', 'ignore')
+        except:
+            pass
 
         if data:
             while len(data) != 0:
@@ -110,7 +112,12 @@ class SocketIOProtocol(object):
                     frame_type = data[0:3]
 
                     if frame_type == JSON_FRAME:
-                        messages.append(json.loads(data[3:size]))
+                        try:
+                            msg = json.loads(data[3:size])
+                        except:
+                            pass
+                        else:
+                            messages.append(msg)
 
                     elif frame_type == HEARTBEAT_FRAME:
                         self.check_heartbeat(data[0:size])
